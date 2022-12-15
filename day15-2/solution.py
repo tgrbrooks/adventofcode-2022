@@ -32,7 +32,7 @@ def merge(arr):
       merged_list.append(arr[i])
   return merged_list
 
-def count_excluded(input, row):
+def find_beacon(input):
   sensors, beacons = parse_input(input)
   closest = []
   for s in sensors:
@@ -41,21 +41,15 @@ def count_excluded(input, row):
       if cdist is None or dist(s, b) < cdist:
         cdist = dist(s, b)
     closest.append(cdist)
-  excluded = []
-  for i, s in enumerate(sensors):
-    drow = closest[i] - dist(s, (s[0], row))
-    if drow < 0:
-      continue
-    excluded.append([s[0]-drow, s[0]+drow])
-  sorted_intervals = sorted(excluded)
-  print(sorted_intervals)
-  merged = merge(sorted_intervals)
-  print(merged)
-  count = 0
-  for e in merged:
-    count += e[1] - e[0] + 1
-  print(count)
-  for b in beacons:
-    if b[1] == row:
-      count -= 1
-  return count
+  for row in range(4000000):
+    excluded = []
+    for i, s in enumerate(sensors):
+      drow = closest[i] - dist(s, (s[0], row))
+      if drow < 0:
+        continue
+      excluded.append([max(s[0]-drow, 0), min(s[0]+drow, 4000000)])
+    sorted_intervals = sorted(excluded)
+    merged = merge(sorted_intervals)
+    for i in range(len(merged)-1):
+      if merged[i+1][0] - merged[i][1] == 2:
+        return (merged[i][1]+1)*4000000 + row
