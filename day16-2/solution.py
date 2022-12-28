@@ -29,17 +29,27 @@ def get_distances(valves, start):
         queue.append(valves[connection])
   return dist
 
-def max_score(valves, pos, time, visited, nonzero):
-  dists = get_distances(valves, pos)
-  visited.add(pos)
-  if time <= 0 or visited == nonzero:
+def max_score(valves, pos1, pos2, time1, time2, visited, nonzero):
+  dists1 = get_distances(valves, pos1)
+  dists2 = get_distances(valves, pos2)
+  visited.add(pos1)
+  visited.add(pos2)
+  if time1 <= 0 or time2 <= 0 or visited == nonzero:
     return 0
   scores = [0]
-  for name, valve in valves.items():
-    if valve.flow != 0 and name not in visited:
-      if (time - dists[name] - 1) > 0:
-        score = valve.flow * (time-dists[name]-1) + max_score(valves, name, time-dists[name]-1, deepcopy(visited), nonzero)
-        scores.append(score)
+  for name1, valve1 in valves.items():
+    if valve1.flow != 0 and name1 not in visited:
+        if (time1 - dists1[name1] - 1) > 0:
+          score = valve1.flow * (time1-dists1[name1]-1)
+          # All valves visited
+          for name2, valve2 in valves.items():
+            if valve2.flow != 0 and name2 not in visited and name2 != name1:
+              if (time2 - dists2[name2] - 1) > 0:
+                score = valve1.flow * (time1-dists1[name1]-1) + valve2.flow * (time2-dists2[name2]-1)
+                ms = max_score(valves, name1, name2, time1-dists1[name1]-1, time2-dists2[name2]-1, deepcopy(visited), nonzero)
+                score += ms
+                scores.append(score)
+          scores.append(score)
   return max(scores)
 
 def get_maximum_pressure(input):
@@ -49,5 +59,5 @@ def get_maximum_pressure(input):
     if valve.flow != 0:
       nonzero.add(name)
   start = 'AA'
-  time = 30
-  return max_score(valves, start, time, set(), nonzero)
+  time = 26
+  return max_score(valves, start, start, time, time, set(), nonzero)
